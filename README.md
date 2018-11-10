@@ -6,7 +6,7 @@ Implementação de tipos de dados gerais:
 3. Email;
 4. Endereço;
 5. Telefone;
-6. Número de Versão Obs.: Necessário NativeXML (https://github.com/kattunga/NativeXml.git)
+6. Número de Versão.
 
 ## Versão
 
