@@ -1,9 +1,11 @@
 (***
  * Civil.Utils.Types.CNPJ.pas;
  *
+ * v1.0.1 (Alpha)
+ *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Eng.º Anderson Marques Ribeiro
+ * Copyright (c) 2018 Eng.º Anderson Marques Ribeiro (anderson.marques.ribeiro@gmail.com).
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -210,30 +212,30 @@ const
 var
 	abytCNPJ: array[0..13] of Byte;
   i: Byte;
-  bytDigito1, bytDigito2: Byte;
+  siDigito1, siDigito2: SmallInt;
 begin
  	for i := 0 to 11 do
    	abytCNPJ[i] := Byte(StrToInt(ACNPJ[i]));
 
-  bytDigito1 := 0;
+  siDigito1 := 0;
   for i := 0 to 11 do
-    Inc(bytDigito1, abytCNPJ[i] * DIGITOS_1[i]);
-  bytDigito1 := bytDigito1 mod 11;
+    Inc(siDigito1, abytCNPJ[i] * DIGITOS_1[i]);
+  siDigito1 := siDigito1 mod 11;
 
-  if bytDigito1 < 2 then
+  if siDigito1 < 2 then
   	abytCNPJ[12] := 0
   else
-  	abytCNPJ[12] := 11 - bytDigito1;
+  	abytCNPJ[12] := 11 - siDigito1;
 
-  bytDigito2 := 0;
+  siDigito2 := 0;
   for i := 0 to 12 do
-   	Inc(bytDigito2, abytCNPJ[i] * DIGITOS_2[i]);
-  bytDigito2 := bytDigito2 mod 11;
+   	Inc(siDigito2, abytCNPJ[i] * DIGITOS_2[i]);
+  siDigito2 := siDigito2 mod 11;
 
-	if bytDigito2 < 2 then
+	if siDigito2 < 2 then
   	abytCNPJ[13] := 0
   else
-  	abytCNPJ[13] := 11 - bytDigito2;
+  	abytCNPJ[13] := 11 - siDigito2;
 
   ACNPJ[12] := AnsiChar(IntToStr(abytCNPJ[12])[1]);
   ACNPJ[13] := AnsiChar(IntToStr(abytCNPJ[13])[1]);

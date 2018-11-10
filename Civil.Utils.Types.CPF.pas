@@ -1,6 +1,8 @@
 (***
  * Civil.Utils.Types.CPF.pas;
  *
+ * v1.0.0 (Alpha)
+ *
  * The MIT License (MIT)
  *
  * Copyright (c) 2018 Eng.º Anderson Marques Ribeiro.

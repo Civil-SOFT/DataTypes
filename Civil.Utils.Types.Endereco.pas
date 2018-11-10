@@ -1,9 +1,11 @@
 (***
  * Civil.Utils.Types.Endereco.pas;
  *
+ * v1.0.0 (Alpha)
+ *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Eng.º Anderson Marques Ribeiro.
+ * Copyright (c) 2018 Eng.º Anderson Marques Ribeiro (anderson.marques.ribeiro@gmail.com).
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
