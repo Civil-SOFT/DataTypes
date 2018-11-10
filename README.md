@@ -20,6 +20,10 @@ Eng.º Anderson Marques Ribeiro
 
 Embarcadero Delphi xe5
 
+## Pré-requisitos
+
+1. NativeXML (https://github.com/kattunga/NativeXml.git).
+
 ## Instalação
 
 1. Adicione os arquivos preferencialmente em uma mesma pasta;
