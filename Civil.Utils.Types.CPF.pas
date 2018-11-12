@@ -1,7 +1,7 @@
 (***
  * Civil.Utils.Types.CPF.pas;
  *
- * v1.0.0 (Alpha)
+ * v1.1.0 (Alpha)
  *
  * The MIT License (MIT)
  *
@@ -78,8 +78,6 @@ type
 
     class constructor CreateClass;
 
-  	class function CalcularDigito(ACPF: AnsiString): SmallInt; static;
-
     function GetNumero: AnsiString;
     procedure SetNumero(AValor: AnsiString);
 
@@ -90,8 +88,14 @@ type
     function Formatado: AnsiString;
     function Estado: TEstadoArray; inline;
 
-  	class function ValidarCPF(ACPF: AnsiString): Boolean; static;
+  strict private
 
+  	class function CalcularDigito(ACPF: AnsiString): SmallInt; overload; static;
+
+  public
+
+  	class function CalcularDigito(ACPF: AnsiString; out ADigito: AnsiString): Boolean; overload; static;
+  	class function ValidarCPF(ACPF: AnsiString): Boolean; static;
   	class function Extrair(ATexto: AnsiString; out AResultado: TDadosExtraidosArray): Integer; static;
 
     class operator Implicit(ACPF: AnsiString): TCPF; overload;
@@ -156,53 +160,6 @@ begin
   FDiagExtracao := TRegEx.Create(PRODUCAO, [roExplicitCapture, roCompiled]);
 end;
 
-class function TCPF.CalcularDigito(ACPF: AnsiString): SmallInt;
-var
-	i, int1, int2, intComp, intCoef: SmallInt;
-begin
-	Result := -1;
-  intComp := Length(ACPF);
-
-	if intComp <> 9 then	Exit;
-  {for i := 1 to intComp do
-  	if not (ACPF[i] in ['0'..'9']) then
-    	Exit;}
-
-  int1 := 0;
-  intCoef := 10;
-  for i := 1 to intComp do
-  begin
-  	Inc(int1, intCoef * StrToInt(ACPF[i]));
-    Dec(intCoef);
-  end;
-  int1 := int1 mod 11;
-
-  //if int1 = 10 then int1 := 0;
-  if int1 in [0, 1] then
-  	int1 := 0
-  else
-  	int1 := 11 - int1;
-
-  ACPF := ACPF + IntToStr(int1);
-  intComp := Length(ACPF);
-
-  int2 := 0;
-  intCoef := 11;
-  for i := 1 to intComp do
-  begin
-  	Inc(int2, intCoef * StrToInt(ACPF[i]));
-    Dec(intCoef);
-  end;
-  int2 := int2 mod 11;
-
-  if int2 in [0, 1] then
-  	int2 := 0
-  else
-  	int2 := 11 - int2;
-
-  Result := StrToInt(IntToStr(int1) + IntToStr(int2));
-end;
-
 function TCPF.GetNumero: AnsiString;
 begin
 	Result := AnsiString(FNumero);
@@ -218,7 +175,7 @@ begin
   	raise ECPF.Create(ceStringCPFInvalida);
 
   AnsiStrings.StrPCopy(FNumero, AValor);
-  AnsiStrings.strPCopy(FDigito, Format('%2d', [intDigito]));
+  AnsiStrings.strPCopy(FDigito, Format('%.2d', [intDigito]));
 end;
 
 function TCPF.Digito: AnsiString;
@@ -315,6 +272,67 @@ begin
       Result[1] := eSC;
     end;
   end;
+end;
+
+class function TCPF.CalcularDigito(ACPF: AnsiString): SmallInt;
+var
+	i, int1, int2, intComp, intCoef: SmallInt;
+begin
+	Result := -1;
+  intComp := Length(ACPF);
+
+	if intComp <> 9 then	Exit;
+  {for i := 1 to intComp do
+  	if not (ACPF[i] in ['0'..'9']) then
+    	Exit;}
+
+  int1 := 0;
+  intCoef := 10;
+  for i := 1 to intComp do
+  begin
+  	Inc(int1, intCoef * StrToInt(ACPF[i]));
+    Dec(intCoef);
+  end;
+  int1 := int1 mod 11;
+
+  //if int1 = 10 then int1 := 0;
+  if int1 in [0, 1] then
+  	int1 := 0
+  else
+  	int1 := 11 - int1;
+
+  ACPF := ACPF + IntToStr(int1);
+  intComp := Length(ACPF);
+
+  int2 := 0;
+  intCoef := 11;
+  for i := 1 to intComp do
+  begin
+  	Inc(int2, intCoef * StrToInt(ACPF[i]));
+    Dec(intCoef);
+  end;
+  int2 := int2 mod 11;
+
+  if int2 in [0, 1] then
+  	int2 := 0
+  else
+  	int2 := 11 - int2;
+
+  Result := StrToInt(IntToStr(int1) + IntToStr(int2));
+end;
+
+class function TCPF.CalcularDigito(ACPF: AnsiString; out ADigito: AnsiString): Boolean;
+var
+	intDigito: SmallInt;
+begin
+	intDigito := CalcularDigito(ACPF);
+  Result := False;
+
+  if intDigito = -1 then
+    Exit;
+
+  ADigito := Format('%.2d', [intDigito]);
+  Result := True;
 end;
 
 class function TCPF.ValidarCPF(ACPF: AnsiString): Boolean;
