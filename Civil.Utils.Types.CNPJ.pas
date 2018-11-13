@@ -1,7 +1,7 @@
 (***
  * Civil.Utils.Types.CNPJ.pas;
  *
- * v1.0.1 (Alpha)
+ * v1.1.0 (Alpha)
  *
  * The MIT License (MIT)
  *
@@ -73,7 +73,8 @@ type
 
   	class var
     	FDiag,
-      FDiagExtracao: TRegEx;
+      FDiagExtracao,
+      FDiagCalcDigito: TRegEx;
       FNumeroVal: TCNPJNumeroType;
       FFilialVal: TCNPJFilialType;
       FDigitoVal: TCNPJDigitoType;
@@ -82,9 +83,6 @@ type
 
     class constructor CreateClass;
 
-    //class function ValidarComp(CNPJ: AnsiString; Digito: Boolean): Boolean; static;
-    class procedure CalcularDigito(var ACNPJ: TCNPJType); static;
-
     // UpdateInternalData;
     //
     // Atualiza todas as informações internas da estrutura.
@@ -92,16 +90,23 @@ type
     // *************************************************************************
     procedure UpdateInternalData;
 
-    function GetNumero: TCNPJNumeroType;
-    function GetFilial: TCNPJFilialType;
-    function GetDigito: TCNPJDigitoType;
+    function GetNumero: AnsiString;
+    function GetFilial: AnsiString;
+    function GetDigito: AnsiString;
 
   public
 
-  	property Numero: TCNPJNumeroType read GetNumero;
-    property Filial: TCNPJFilialType read GetFilial;
-    property Digito: TCNPJDigitoType read GetDigito;
+  	property Numero: AnsiString read GetNumero;
+    property Filial: AnsiString read GetFilial;
+    property Digito: AnsiString read GetDigito;
 
+	strict private
+
+    class procedure CalcularDigito(var ACNPJ: TCNPJType); overload; static;
+
+  public
+
+  	class function CalcularDigito(ACNPJ: AnsiString; out ADigito: AnsiString): Boolean; overload; static;
     function Formatado: AnsiString;
 
     // Validate;
@@ -190,18 +195,35 @@ const
 begin
 	FDiag := TRegEx.Create('^' + PRODUCAO + '$', [roExplicitCapture, roCompiled]);
   FDiagExtracao := TRegEx.Create(PRODUCAO, [roExplicitCapture, roCompiled]);
+  FDiagCalcDigito := TRegEx.Create('^([0-9]{12})|((?<p1>[0-9]{2}).(?<p2>[0-9]{3}).(?<p3>[0-9]{3})/(?<p4>[0-9]{4}))$', [roExplicitCapture, roCompiled]);
 end;
 
-{class function TCNPJ.ValidarComp(CNPJ: AnsiString; Digito: Boolean): Boolean;
-var
-	bytComp: Byte;
+procedure TCNPJ.UpdateInternalData;
 begin
-	Result := False;
-  bytComp := 12;
-  if Digito then Inc(bytComp, 2);
-	if Length(CNPJ) <> bytComp then Exit;
-  Result := True;
-end;}
+	CalcularDigito(FCNPJ);
+end;
+
+function TCNPJ.GetNumero: AnsiString;
+begin
+	Result := AnsiString(FNumero);
+end;
+
+function TCNPJ.GetFilial: AnsiString;
+begin
+	Result := AnsiString(FFilial);
+end;
+
+function TCNPJ.GetDigito: AnsiString;
+begin
+	Result := AnsiString(FDigito);
+end;
+
+function TCNPJ.Formatado: AnsiString;
+begin
+ 	UpdateInternalData;
+  Result := Copy(FCNPJ, 0, 2) + '.' + Copy(FCNPJ, 3, 3) + '.' + Copy(FCNPJ, 6, 3) +
+								 '/' + Copy(FCNPJ, 9, 4) + '-' + Copy(FCNPJ, 13, 2);
+end;
 
 class procedure TCNPJ.CalcularDigito(var ACNPJ: TCNPJType);
 const
@@ -241,31 +263,27 @@ begin
   ACNPJ[13] := AnsiChar(IntToStr(abytCNPJ[13])[1]);
 end;
 
-procedure TCNPJ.UpdateInternalData;
+class function TCNPJ.CalcularDigito(ACNPJ: AnsiString; out ADigito: AnsiString): Boolean;
+var
+	match: TMatch;
+  strCNPJ: AnsiString;
+  i: Integer;
+  bff: TCNPJType;
 begin
-	CalcularDigito(FCNPJ);
-end;
+	Result := False;
+  match := FDiagCalcDigito.Match(ACNPJ);
 
-function TCNPJ.GetNumero: TCNPJNumeroType;
-begin
-	Result := FNumero;
-end;
+  if not match.Success then
+  	Exit;
 
-function TCNPJ.GetFilial: TCNPJFilialType;
-begin
-	Result := FFilial;
-end;
+  strCNPJ := '';
+  for i := 1 to match.Groups.Count - 1 do
+		strCNPJ := strCNPJ + match.Groups.Item[i].Value;
 
-function TCNPJ.GetDigito: TCNPJDigitoType;
-begin
-	Result := FDigito;
-end;
-
-function TCNPJ.Formatado: AnsiString;
-begin
- 	UpdateInternalData;
-  Result := Copy(FCNPJ, 0, 2) + '.' + Copy(FCNPJ, 3, 3) + '.' + Copy(FCNPJ, 6, 3) +
-								 '/' + Copy(FCNPJ, 9, 4) + '-' + Copy(FCNPJ, 13, 2);
+  AnsiStrings.StrPCopy(bff, strCNPJ);
+  CalcularDigito(bff);
+  ADigito := Copy(AnsiString(bff), 12, 2);
+  Result := True;
 end;
 
 class function TCNPJ.ValidarCNPJ(ACNPJ: AnsiString): Boolean;
