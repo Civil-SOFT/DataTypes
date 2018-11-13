@@ -1,7 +1,7 @@
 (***
  * Civil.Utils.Types.CPF.pas;
  *
- * v1.1.0 (Alpha)
+ * v1.2.0 (Alpha)
  *
  * The MIT License (MIT)
  *
@@ -70,7 +70,8 @@ type
 
     class var
     	FDiag,
-      FDiagExtracao: TRegEx;
+      FDiagExtracao,
+      FDiagCalcDigito: TRegEx;
       FNumeroVal: TNumeroType;
       FDigitoVal: TDigitoVerifType;
 
@@ -158,6 +159,7 @@ const
 begin
 	FDiag := TRegEx.Create('^' + PRODUCAO + '$', [roExplicitCapture, roCompiled]);
   FDiagExtracao := TRegEx.Create(PRODUCAO, [roExplicitCapture, roCompiled]);
+  FDiagCalcDigito := TRegEx.Create('^[0-9]{9}$', [roExplicitCapture, roCompiled]);
 end;
 
 function TCPF.GetNumero: AnsiString;
@@ -279,13 +281,11 @@ var
 	i, int1, int2, intComp, intCoef: SmallInt;
 begin
 	Result := -1;
+
+  if not FDiagCalcDigito.IsMatch(ACPF) then
+  	Exit;
+
   intComp := Length(ACPF);
-
-	if intComp <> 9 then	Exit;
-  {for i := 1 to intComp do
-  	if not (ACPF[i] in ['0'..'9']) then
-    	Exit;}
-
   int1 := 0;
   intCoef := 10;
   for i := 1 to intComp do
