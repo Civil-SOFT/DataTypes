@@ -1,7 +1,7 @@
 (***
  * Civil.Utils.Types.CPF.pas;
  *
- * v1.2.0 (Alpha)
+ * v1.2.1 (Alpha)
  *
  * The MIT License (MIT)
  *
@@ -159,7 +159,7 @@ const
 begin
 	FDiag := TRegEx.Create('^' + PRODUCAO + '$', [roExplicitCapture, roCompiled]);
   FDiagExtracao := TRegEx.Create(PRODUCAO, [roExplicitCapture, roCompiled]);
-  FDiagCalcDigito := TRegEx.Create('^[0-9]{9}$', [roExplicitCapture, roCompiled]);
+  FDiagCalcDigito := TRegEx.Create('^([0-9]{9})|([0-9]{3}.[0-9]{3}.[0-9]{3})$', [roExplicitCapture, roCompiled]);
 end;
 
 function TCPF.GetNumero: AnsiString;
