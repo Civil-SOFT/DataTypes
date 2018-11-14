@@ -1,7 +1,7 @@
 (***
  * Civil.Utils.Types.CPF.pas;
  *
- * v1.2.1 (Alpha)
+ * v1.3.1 (Alpha)
  *
  * The MIT License (MIT)
  *
@@ -102,6 +102,9 @@ type
     class operator Implicit(ACPF: AnsiString): TCPF; overload;
     class operator Implicit(ACPF: TCPF): AnsiString; overload;
     class operator Implicit(ACPF: TCPF): Variant; overload;
+
+    class operator Equal(ACPF1, ACPF2: TCPF): Boolean; inline;
+    class operator NotEqual(ACPF1, ACPF2: TCPF): Boolean; inline;
 
   strict private
 
@@ -407,6 +410,16 @@ end;
 class operator TCPF.Implicit(ACPF: TCPF): Variant;
 begin
 	Result := VarCPFCreate(ACPF);
+end;
+
+class operator TCPF.Equal(ACPF1, ACPF2: TCPF): Boolean;
+begin
+	Result := AnsiCompareStr(AnsiString(ACPF1), AnsiString(ACPF2)) = 0;
+end;
+
+class operator TCPF.NotEqual(ACPF1, ACPF2: TCPF): Boolean;
+begin
+	Result := AnsiCompareStr(AnsiString(ACPF1), AnsiString(ACPF2)) <> 0;
 end;
 
 (*
