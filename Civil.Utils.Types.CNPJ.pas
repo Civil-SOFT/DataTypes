@@ -1,7 +1,7 @@
 (***
  * Civil.Utils.Types.CNPJ.pas;
  *
- * v1.1.0 (Alpha)
+ * v1.2.0 (Beta)
  *
  * The MIT License (MIT)
  *
@@ -57,6 +57,8 @@ type
 
   end; { ECNPJ }
 
+  TNumeroFilialType = 1..9999;
+
   TCNPJ = packed record
   public
 
@@ -71,17 +73,16 @@ type
       TCNPJFilialType = packed array[0..3] of TAnsiDigitoType;
       TCNPJDigitoType = packed array[0..1] of TAnsiDigitoType;
 
+    class constructor CreateClass;
+
   	class var
     	FDiag,
       FDiagExtracao,
-      FDiagCalcDigito: TRegEx;
+      FDiagCalcDigito,
+      FDiagNumero: TRegEx;
       FNumeroVal: TCNPJNumeroType;
       FFilialVal: TCNPJFilialType;
       FDigitoVal: TCNPJDigitoType;
-
-  strict private
-
-    class constructor CreateClass;
 
     // UpdateInternalData;
     //
@@ -91,13 +92,17 @@ type
     procedure UpdateInternalData;
 
     function GetNumero: AnsiString;
-    function GetFilial: AnsiString;
+    procedure SetNumero(AValor: AnsiString);
+    function GetFilial: TNumeroFilialType;
+    procedure SetFilial(AValor: TNumeroFilialType);
+    function GetFilialComoString: AnsiString;
     function GetDigito: AnsiString;
 
   public
 
-  	property Numero: AnsiString read GetNumero;
-    property Filial: AnsiString read GetFilial;
+  	property Numero: AnsiString read GetNumero write SetNumero;
+    property Filial: TNumeroFilialType read GetFilial write SetFilial;
+    property FilialComoString: AnsiString read GetFilialComoString;
     property Digito: AnsiString read GetDigito;
 
 	strict private
@@ -196,6 +201,7 @@ begin
 	FDiag := TRegEx.Create('^' + PRODUCAO + '$', [roExplicitCapture, roCompiled]);
   FDiagExtracao := TRegEx.Create(PRODUCAO, [roExplicitCapture, roCompiled]);
   FDiagCalcDigito := TRegEx.Create('^([0-9]{12})|((?<p1>[0-9]{2}).(?<p2>[0-9]{3}).(?<p3>[0-9]{3})/(?<p4>[0-9]{4}))$', [roExplicitCapture, roCompiled]);
+  FDiagNumero := TRegEx.Create('^([0-9]{8})|([0-9]{2}.[0-9]{3}.[0-9]{3})$', [roExplicitCapture, roCompiled]);
 end;
 
 procedure TCNPJ.UpdateInternalData;
@@ -208,7 +214,33 @@ begin
 	Result := AnsiString(FNumero);
 end;
 
-function TCNPJ.GetFilial: AnsiString;
+procedure TCNPJ.SetNumero(AValor: AnsiString);
+begin
+	if AnsiCompareStr(AValor, AnsiString(FNumero)) = 0 then
+  	Exit;
+
+	if not FDiagNumero.IsMatch(AValor) then
+  	raise ECNPJ.Create(ceStringCNPJInvalida);
+
+  AnsiStrings.StrPCopy(FNumero, AValor);
+
+  if Length(AnsiString(FFilial)) = 0 then
+  	FFilial := '0001';
+
+  CalcularDigito(FCNPJ);
+end;
+
+function TCNPJ.GetFilial: TNumeroFilialType;
+begin
+	Result := StrToInt( AnsiString(FFilial) );
+end;
+
+procedure TCNPJ.SetFilial(AValor: TNumeroFilialType);
+begin
+	AnsiStrings.StrPCopy(FFilial, Format('%.4d', [AValor]));
+end;
+
+function TCNPJ.GetFilialComoString: AnsiString;
 begin
 	Result := AnsiString(FFilial);
 end;
@@ -484,7 +516,9 @@ begin
 	  else if CompareStr(Name, 'NUMERO') = 0 then
   		Variant(Dest) := AnsiString(Numero)
     else if CompareStr(Name, 'FILIAL') = 0 then
-    	Variant(Dest) := AnsiString(Filial)
+    	Variant(Dest) := SmallInt(Filial)
+    else if CompareStr(Name, 'FILIALCOMOSTRING') = 0 then
+    	Variant(Dest) := FilialComoString
 	  else if CompareStr(Name, 'DIGITO') = 0 then
   		Variant(Dest) := AnsiString(Digito)
 	  else

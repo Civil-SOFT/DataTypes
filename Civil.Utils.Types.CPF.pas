@@ -1,7 +1,7 @@
 (***
  * Civil.Utils.Types.CPF.pas;
  *
- * v1.3.1 (Alpha)
+ * v1.0.0 (Beta)
  *
  * The MIT License (MIT)
  *
