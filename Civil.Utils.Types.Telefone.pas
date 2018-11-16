@@ -1,7 +1,7 @@
 (***
  * Civil.Utils.Types.Telefone.pas;
  *
- * v1.0.0 (Alpha)
+ * v1.1.0 (Beta)
  *
  * The MIT License (MIT)
  *
@@ -334,7 +334,7 @@ type
   TTipoTelefoneEnum =
   (
     ttFixo,
-    ttCelular
+    ttMovel
   );
 
   TTelefone = packed record
@@ -357,7 +357,8 @@ type
 
 		class var
     	FDiag,
-      FDiagParte: TRegEx;
+      FDiagParte1,
+      FDiagParte2: TRegEx;
       //FTokens: TTokenDecomposer;
       FDDDVal: TDDDEnum;
       FParte1Val: TParte1Type;
@@ -390,7 +391,6 @@ type
 
     class function ValidarNumero(ATelefone: AnsiString): Boolean; static;
 
-    //property Numero: AnsiString read GetNumero write SetNumero;
     property Parte1: AnsiString read GetParte1 write SetParte1;
     property Parte2: AnsiString read GetParte2 write SetParte2;
     property Tipo: TTipoTelefoneEnum read FTipo;
@@ -401,6 +401,9 @@ type
     class operator Implicit(ATelefone: AnsiString): TTelefone; overload; inline;
     class operator Implicit(ATelefone: TTelefone): AnsiString; overload; inline;
     class operator Implicit(ATelefone: TTelefone): Variant; overload; inline;
+
+    class operator Equal(ATel1, ATel2: TTelefone): Boolean; inline;
+    class operator NotEqual(ATel1, ATel2: TTelefone): Boolean; inline;
 
   end; { TTelefone }
   TTelefoneArray = array of TTelefone;
@@ -684,11 +687,12 @@ end;
 class constructor TTelefone.CreateClass;
 const
 
-	PRODUCAO = '(((\((?<DDD1>0?[0-9]{2})\))|(?<DDD2>0?[0-9]{2}))\s*)?(?<Parte1>[0-9]{4,5})\s*-?\s*(?<Parte2>[0-9]{4})';
+	PRODUCAO = '(((\((?<DDD1>0?[0-9]{2})\))|(?<DDD2>0?[0-9]{2}))\s*)?(?<Parte1>9?[0-9]{4})\s*-?\s*(?<Parte2>[0-9]{4})';
 
 begin
 	FDiag := TRegEx.Create('^' + PRODUCAO + '$', [roExplicitCapture, roCompiled]);
-  FDiagParte := TRegEx.Create('^[0-9]{4}$', [roExplicitCapture, roCompiled]);
+  FDiagParte1 := TRegEx.Create('^9?[0-9]{4}$', [roExplicitCapture, roCompiled]);
+  FDiagParte2 := TRegEx.Create('^[0-9]{4}$', [roExplicitCapture, roCompiled]);
   FDiagExtracao := TRegEx.Create(PRODUCAO, [roExplicitCapture, roCompiled]);
 	DDDPadrao := ddd11;
 end;
@@ -734,7 +738,7 @@ end;
 
 procedure TTelefone.SetParte1(AValor: AnsiString);
 begin
-	if not FDiagParte.IsMatch(AValor) then
+	if not FDiagParte1.IsMatch(AValor) then
   	raise ETelefone.Create(teStringTelefoneInvalida);
 
 	AnsiStrings.StrPLCopy(FParte1, AValor, Min(Length(AValor), 5));
@@ -747,7 +751,7 @@ end;
 
 procedure TTelefone.SetParte2(AValor: AnsiString);
 begin
-	if not FDiagParte.IsMatch(AValor) then
+	if not FDiagParte2.IsMatch(AValor) then
   	raise ETelefone.Create(teStringTelefoneInvalida);
 
 	AnsiStrings.StrPLCopy(FParte2, AValor, 4);
@@ -807,6 +811,16 @@ end;
 class operator TTelefone.Implicit(ATelefone: TTelefone): Variant;
 begin
 	Result := VarTelefoneCreate(ATelefone);
+end;
+
+class operator TTelefone.Equal(ATel1, ATel2: TTelefone): Boolean;
+begin
+	Result := AnsiCompareStr(ATel1, ATel2) = 0;
+end;
+
+class operator TTelefone.NotEqual(ATel1, ATel2: TTelefone): Boolean;
+begin
+	Result := AnsiCompareStr(ATel1, ATel2) <> 0;
 end;
 
 (*
